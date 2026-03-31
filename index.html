@@ -176,7 +176,7 @@
     <!-- KỊCH BẢN JAVASCRIPT THUẦN -->
     <script>
         // --- 1. CẤU HÌNH API & BIẾN TOÀN CỤC ---
-        const GEMINI_API_KEY = "AIzaSyATLdcX7L7wKPNfi6B-GapUWP0Y7LzQayU";
+        const GEMINI_API_KEY = "";
         
         let appState = 'input'; // input, practice, results
         let sentences = [];
@@ -276,11 +276,6 @@
                     });
 
                     if (!res.ok) {
-                        const errData = await res.json().catch(() => ({}));
-                        // Bắt cứng lỗi 403 (Sai Key) hoặc 400 (Bad Request) để ngừng thử lại
-                        if (res.status === 400 || res.status === 403) {
-                            throw new Error(`API Key lỗi hoặc hết hạn. [Mã: ${res.status}] ${errData.error?.message || ''}`);
-                        }
                         throw new Error(`HTTP Error ${res.status}`);
                     }
                     
@@ -298,7 +293,7 @@
 
                 } catch (e) {
                     // Nếu là lỗi không thể phục hồi hoặc đã thử hết số lần
-                    if (i === retries - 1 || e.message.includes("API Key lỗi")) {
+                    if (i === retries - 1) {
                         console.error("TTS API Failed:", e);
                         return null;
                     }
@@ -322,17 +317,14 @@
                     });
 
                     if (!res.ok) {
-                        if (res.status === 400 || res.status === 403) {
-                            throw new Error(`Invalid Key or Request`);
-                        }
                         throw new Error(`HTTP error ${res.status}`);
                     }
 
                     const data = await res.json();
                     return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Không thể dịch câu này.";
                 } catch (e) {
-                    if (i === retries - 1 || e.message.includes("Invalid Key")) {
-                        return "Lỗi kết nối API dịch thuật. Vui lòng kiểm tra lại API Key.";
+                    if (i === retries - 1) {
+                        return "Lỗi kết nối API dịch thuật. Vui lòng thử lại sau.";
                     }
                     await new Promise(r => setTimeout(r, delays[i]));
                 }
